@@ -27,15 +27,17 @@ var ErrReadOnly = dbus.NewError("org.freedesktop.DBus.Properties.Error.ReadOnly"
 // changed and the argument don't match.
 var ErrInvalidArg = dbus.NewError("org.freedesktop.DBus.Properties.Error.InvalidArg", nil)
 
-func NewOrgFreedesktopDBusProperties(root *OrgMprisMediaPlayer2) *OrgFreedesktopDBusProperties {
+func NewOrgFreedesktopDBusProperties(
+	root *OrgMprisMediaPlayer2,
+	player *OrgMprisMediaPlayer2Player,
+) *OrgFreedesktopDBusProperties {
 	gm := make(methodsMap)
 	gm["org.mpris.MediaPlayer2"] = root.GetMethods()
+	gm["org.mpris.MediaPlayer2.Player"] = player.GetMethods()
 	sm := make(methodsMap)
 	sm["org.mpris.MediaPlayer2"] = root.SetMethods()
-	return &OrgFreedesktopDBusProperties{
-		getMethods: gm,
-		setMethods: sm,
-	}
+	sm["org.mpris.MediaPlayer2.Player"] = player.SetMethods()
+	return &OrgFreedesktopDBusProperties{getMethods: gm, setMethods: sm}
 }
 
 type OrgFreedesktopDBusProperties struct {

@@ -19,6 +19,17 @@ func exportOrgMprisMediaPlayer2(conn *dbus.Conn, r *OrgMprisMediaPlayer2) error 
 	}, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2")
 }
 
+func exportOrgMprisMediaPlayer2Player(conn *dbus.Conn, p *OrgMprisMediaPlayer2Player) error {
+	return conn.ExportSubtreeMethodTable(map[string]interface{}{
+		"Next":      p.Next,
+		"Previous":  p.Previous,
+		"Pause":     p.Pause,
+		"PlayPause": p.PlayPause,
+		"Stop":      p.Stop,
+		"Play":      p.Play,
+	}, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player")
+}
+
 func exportOrgFreedesktopDBusProperties(conn *dbus.Conn, p *OrgFreedesktopDBusProperties) error {
 	return conn.ExportSubtreeMethodTable(map[string]interface{}{
 		"Get":    p.Get,
@@ -30,6 +41,7 @@ func exportOrgFreedesktopDBusProperties(conn *dbus.Conn, p *OrgFreedesktopDBusPr
 func ExportMethods(
 	conn *dbus.Conn,
 	root *OrgMprisMediaPlayer2,
+	player *OrgMprisMediaPlayer2Player,
 	properties *OrgFreedesktopDBusProperties,
 ) error {
 	var err error
@@ -38,6 +50,10 @@ func ExportMethods(
 		return err
 	}
 	err = exportOrgMprisMediaPlayer2(conn, root)
+	if err != nil {
+		return err
+	}
+	err = exportOrgMprisMediaPlayer2Player(conn, player)
 	if err != nil {
 		return err
 	}

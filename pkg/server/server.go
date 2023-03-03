@@ -13,17 +13,24 @@ type Server struct {
 	ServiceName string
 	conn        *dbus.Conn
 	root        *internal.OrgMprisMediaPlayer2
+	player      *internal.OrgMprisMediaPlayer2Player
 	properties  *internal.OrgFreedesktopDBusProperties
 	stop        chan bool
 }
 
 // Create a new server with a given name and initialize needed data.
-func NewServer(name string, rootAdapter adapters.OrgMprisMediaPlayer2Adapter) *Server {
+func NewServer(
+	name string,
+	rootAdapter adapters.OrgMprisMediaPlayer2Adapter,
+	playerAdapter adapters.OrgMprisMediaPlayer2PlayerAdapter,
+) *Server {
 	root := internal.NewOrgMprisMediaPlayer2(rootAdapter)
-	properties := internal.NewOrgFreedesktopDBusProperties(root)
+	player := internal.NewOrgMprisMediaPlayer2Player(playerAdapter)
+	properties := internal.NewOrgFreedesktopDBusProperties(root, player)
 	server := Server{
 		ServiceName: "org.mpris.MediaPlayer2." + name,
 		root:        root,
+		player:      player,
 		properties:  properties,
 		stop:        make(chan bool, 1),
 	}
@@ -43,7 +50,7 @@ func (s *Server) Listen() error {
 		s.conn.Close()
 		return errors.New("Unable to claim " + s.ServiceName)
 	}
-	err = internal.ExportMethods(s.conn, s.root, s.properties)
+	err = internal.ExportMethods(s.conn, s.root, s.player, s.properties)
 	if err != nil {
 		s.conn.ReleaseName(s.ServiceName)
 		s.conn.Close()

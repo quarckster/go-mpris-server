@@ -19,19 +19,11 @@ type OrgMprisMediaPlayer2 struct {
 }
 
 func (r *OrgMprisMediaPlayer2) Raise() *dbus.Error {
-	err := r.Adapter.Raise()
-	if err != nil {
-		return dbus.MakeFailedError(err)
-	}
-	return nil
+	return makeError(r.Adapter.Raise())
 }
 
 func (r *OrgMprisMediaPlayer2) Quit() *dbus.Error {
-	err := r.Adapter.Quit()
-	if err != nil {
-		return dbus.MakeFailedError(err)
-	}
-	return nil
+	return makeError(r.Adapter.Quit())
 }
 
 func (r *OrgMprisMediaPlayer2) GetMethods() map[string]interface{} {
