@@ -6,15 +6,24 @@ type OrgMprisMediaPlayer2Adapter interface {
 	Raise() error
 	Quit() error
 	CanQuit() (bool, error)
-	Fullscreen() (bool, error)
-	SetFullscreen(bool) error
-	CanSetFullscreen() (bool, error)
 	CanRaise() (bool, error)
 	HasTrackList() (bool, error)
 	Identity() (string, error)
-	DesktopEntry() (string, error)
 	SupportedUriSchemes() ([]string, error)
 	SupportedMimeTypes() ([]string, error)
+}
+
+type OrgMprisMediaPlayer2AdapterFullscreen interface {
+	Fullscreen() (bool, error)
+	SetFullscreen(bool) error
+}
+
+type OrgMprisMediaPlayer2AdapterCanSetFullscreen interface {
+	CanSetFullscreen() (bool, error)
+}
+
+type OrgMprisMediaPlayer2AdapterDesktopEntry interface {
+	DesktopEntry() (string, error)
 }
 
 type OrgMprisMediaPlayer2PlayerAdapter interface {
@@ -28,12 +37,8 @@ type OrgMprisMediaPlayer2PlayerAdapter interface {
 	SetPosition(trackId string, position int64) error
 	OpenUri(uri string) error
 	PlaybackStatus() (types.PlaybackStatus, error)
-	LoopStatus() (types.LoopStatus, error)
-	SetLoopStatus(types.LoopStatus) error
 	Rate() (float64, error)
 	SetRate(float64) error
-	Shuffle() (bool, error)
-	SetShuffle(bool) error
 	Metadata() (types.Metadata, error)
 	Volume() (float64, error)
 	SetVolume(float64) error
@@ -46,4 +51,14 @@ type OrgMprisMediaPlayer2PlayerAdapter interface {
 	CanPause() (bool, error)
 	CanSeek() (bool, error)
 	CanControl() (bool, error)
+}
+
+type OrgMprisMediaPlayer2PlayerAdapterLoopStatus interface {
+	LoopStatus() (types.LoopStatus, error)
+	SetLoopStatus(types.LoopStatus) error
+}
+
+type OrgMprisMediaPlayer2PlayerAdapterShuffle interface {
+	Shuffle() (bool, error)
+	SetShuffle(bool) error
 }

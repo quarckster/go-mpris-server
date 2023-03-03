@@ -63,11 +63,9 @@ func (p *OrgMprisMediaPlayer2Player) Metadata() (map[string]dbus.Variant, error)
 }
 
 func (p *OrgMprisMediaPlayer2Player) GetMethods() map[string]interface{} {
-	return map[string]interface{}{
+	methods := map[string]interface{}{
 		"PlaybackStatus": p.Adapter.PlaybackStatus,
-		"LoopStatus":     p.Adapter.LoopStatus,
 		"Rate":           p.Adapter.Rate,
-		"Shuffle":        p.Adapter.Shuffle,
 		"Metadata":       p.Metadata,
 		"Volume":         p.Adapter.Volume,
 		"Position":       p.Adapter.Position,
@@ -80,13 +78,29 @@ func (p *OrgMprisMediaPlayer2Player) GetMethods() map[string]interface{} {
 		"CanSeek":        p.Adapter.CanSeek,
 		"CanControl":     p.Adapter.CanControl,
 	}
+	loopStatus, ok := p.Adapter.(adapters.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
+	if ok {
+		methods["LoopStatus"] = loopStatus.LoopStatus
+	}
+	shuffle, ok := p.Adapter.(adapters.OrgMprisMediaPlayer2PlayerAdapterShuffle)
+	if ok {
+		methods["Shuffle"] = shuffle.Shuffle
+	}
+	return methods
 }
 
 func (p *OrgMprisMediaPlayer2Player) SetMethods() map[string]interface{} {
-	return map[string]interface{}{
-		"LoopStatus": p.Adapter.SetLoopStatus,
-		"Rate":       p.Adapter.SetRate,
-		"Shuffle":    p.Adapter.SetShuffle,
-		"Volume":     p.Adapter.SetVolume,
+	methods := map[string]interface{}{
+		"Rate":   p.Adapter.SetRate,
+		"Volume": p.Adapter.SetVolume,
 	}
+	loopStatus, ok := p.Adapter.(adapters.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
+	if ok {
+		methods["LoopStatus"] = loopStatus.SetLoopStatus
+	}
+	shuffle, ok := p.Adapter.(adapters.OrgMprisMediaPlayer2PlayerAdapterShuffle)
+	if ok {
+		methods["Shuffle"] = shuffle.SetShuffle
+	}
+	return methods
 }

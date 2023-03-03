@@ -27,21 +27,34 @@ func (r *OrgMprisMediaPlayer2) Quit() *dbus.Error {
 }
 
 func (r *OrgMprisMediaPlayer2) GetMethods() map[string]interface{} {
-	return map[string]interface{}{
+	methods := map[string]interface{}{
 		"CanQuit":             r.Adapter.CanQuit,
-		"Fullscreen":          r.Adapter.Fullscreen,
-		"CanSetFullscreen":    r.Adapter.CanSetFullscreen,
 		"CanRaise":            r.Adapter.CanRaise,
 		"HasTrackList":        r.Adapter.HasTrackList,
 		"Identity":            r.Adapter.Identity,
-		"DesktopEntry":        r.Adapter.DesktopEntry,
 		"SupportedUriSchemes": r.Adapter.SupportedUriSchemes,
 		"SupportedMimeTypes":  r.Adapter.SupportedMimeTypes,
 	}
+	fullscreen, ok := r.Adapter.(adapters.OrgMprisMediaPlayer2AdapterFullscreen)
+	if ok {
+		methods["Fullscreen"] = fullscreen.Fullscreen
+	}
+	canSetFullscreen, ok := r.Adapter.(adapters.OrgMprisMediaPlayer2AdapterCanSetFullscreen)
+	if ok {
+		methods["CanSetFullscreen"] = canSetFullscreen.CanSetFullscreen
+	}
+	desktopEntry, ok := r.Adapter.(adapters.OrgMprisMediaPlayer2AdapterDesktopEntry)
+	if ok {
+		methods["DesktopEntry"] = desktopEntry.DesktopEntry
+	}
+	return methods
 }
 
 func (r *OrgMprisMediaPlayer2) SetMethods() map[string]interface{} {
-	return map[string]interface{}{
-		"Fullscreen": r.Adapter.SetFullscreen,
+	methods := make(map[string]interface{})
+	setFullscreen, ok := r.Adapter.(adapters.OrgMprisMediaPlayer2AdapterFullscreen)
+	if ok {
+		methods["SetFullscreen"] = setFullscreen.SetFullscreen
 	}
+	return methods
 }
