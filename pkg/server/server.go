@@ -6,7 +6,7 @@ import (
 
 	"github.com/godbus/dbus/v5"
 	"github.com/quarckster/go-mpris-server/internal"
-	"github.com/quarckster/go-mpris-server/pkg/adapters"
+	"github.com/quarckster/go-mpris-server/pkg/types"
 )
 
 type Server struct {
@@ -21,8 +21,8 @@ type Server struct {
 // Create a new server with a given name and initialize needed data.
 func NewServer(
 	name string,
-	rootAdapter adapters.OrgMprisMediaPlayer2Adapter,
-	playerAdapter adapters.OrgMprisMediaPlayer2PlayerAdapter,
+	rootAdapter types.OrgMprisMediaPlayer2Adapter,
+	playerAdapter types.OrgMprisMediaPlayer2PlayerAdapter,
 ) *Server {
 	root := internal.NewOrgMprisMediaPlayer2(rootAdapter)
 	player := internal.NewOrgMprisMediaPlayer2Player(playerAdapter)
@@ -34,7 +34,7 @@ func NewServer(
 		properties:  properties,
 		stop:        make(chan bool, 1),
 	}
-	properties.Emit = server.Emit
+	properties.EmitPropertyChanged = server.EmitPropertyChanged
 	return &server
 }
 
@@ -85,7 +85,7 @@ func (s *Server) Stop() error {
 }
 
 // Emit sends the given signal to the bus.
-func (s *Server) Emit(property string, newv dbus.Variant) error {
+func (s *Server) EmitPropertyChanged(property string, newv dbus.Variant) error {
 	return s.conn.Emit(
 		"/org/mpris/MediaPlayer2",
 		"org.freedesktop.DBus.Properties.PropertiesChanged",

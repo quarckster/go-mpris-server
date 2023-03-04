@@ -4,17 +4,17 @@ import (
 	"sync"
 
 	"github.com/godbus/dbus/v5"
-	"github.com/quarckster/go-mpris-server/pkg/adapters"
+	"github.com/quarckster/go-mpris-server/pkg/types"
 )
 
-func NewOrgMprisMediaPlayer2(adapter adapters.OrgMprisMediaPlayer2Adapter) *OrgMprisMediaPlayer2 {
+func NewOrgMprisMediaPlayer2(adapter types.OrgMprisMediaPlayer2Adapter) *OrgMprisMediaPlayer2 {
 	return &OrgMprisMediaPlayer2{
 		Adapter: adapter,
 	}
 }
 
 type OrgMprisMediaPlayer2 struct {
-	Adapter adapters.OrgMprisMediaPlayer2Adapter
+	Adapter types.OrgMprisMediaPlayer2Adapter
 	mut     sync.RWMutex
 }
 
@@ -35,15 +35,15 @@ func (r *OrgMprisMediaPlayer2) GetMethods() map[string]interface{} {
 		"SupportedUriSchemes": r.Adapter.SupportedUriSchemes,
 		"SupportedMimeTypes":  r.Adapter.SupportedMimeTypes,
 	}
-	fullscreen, ok := r.Adapter.(adapters.OrgMprisMediaPlayer2AdapterFullscreen)
+	fullscreen, ok := r.Adapter.(types.OrgMprisMediaPlayer2AdapterFullscreen)
 	if ok {
 		methods["Fullscreen"] = fullscreen.Fullscreen
 	}
-	canSetFullscreen, ok := r.Adapter.(adapters.OrgMprisMediaPlayer2AdapterCanSetFullscreen)
+	canSetFullscreen, ok := r.Adapter.(types.OrgMprisMediaPlayer2AdapterCanSetFullscreen)
 	if ok {
 		methods["CanSetFullscreen"] = canSetFullscreen.CanSetFullscreen
 	}
-	desktopEntry, ok := r.Adapter.(adapters.OrgMprisMediaPlayer2AdapterDesktopEntry)
+	desktopEntry, ok := r.Adapter.(types.OrgMprisMediaPlayer2AdapterDesktopEntry)
 	if ok {
 		methods["DesktopEntry"] = desktopEntry.DesktopEntry
 	}
@@ -52,7 +52,7 @@ func (r *OrgMprisMediaPlayer2) GetMethods() map[string]interface{} {
 
 func (r *OrgMprisMediaPlayer2) SetMethods() map[string]interface{} {
 	methods := make(map[string]interface{})
-	setFullscreen, ok := r.Adapter.(adapters.OrgMprisMediaPlayer2AdapterFullscreen)
+	setFullscreen, ok := r.Adapter.(types.OrgMprisMediaPlayer2AdapterFullscreen)
 	if ok {
 		methods["SetFullscreen"] = setFullscreen.SetFullscreen
 	}

@@ -4,17 +4,17 @@ import (
 	"sync"
 
 	"github.com/godbus/dbus/v5"
-	"github.com/quarckster/go-mpris-server/pkg/adapters"
+	"github.com/quarckster/go-mpris-server/pkg/types"
 )
 
-func NewOrgMprisMediaPlayer2Player(adapter adapters.OrgMprisMediaPlayer2PlayerAdapter) *OrgMprisMediaPlayer2Player {
+func NewOrgMprisMediaPlayer2Player(adapter types.OrgMprisMediaPlayer2PlayerAdapter) *OrgMprisMediaPlayer2Player {
 	return &OrgMprisMediaPlayer2Player{
 		Adapter: adapter,
 	}
 }
 
 type OrgMprisMediaPlayer2Player struct {
-	Adapter adapters.OrgMprisMediaPlayer2PlayerAdapter
+	Adapter types.OrgMprisMediaPlayer2PlayerAdapter
 	mut     sync.RWMutex
 }
 
@@ -78,11 +78,11 @@ func (p *OrgMprisMediaPlayer2Player) GetMethods() map[string]interface{} {
 		"CanSeek":        p.Adapter.CanSeek,
 		"CanControl":     p.Adapter.CanControl,
 	}
-	loopStatus, ok := p.Adapter.(adapters.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
+	loopStatus, ok := p.Adapter.(types.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
 	if ok {
 		methods["LoopStatus"] = loopStatus.LoopStatus
 	}
-	shuffle, ok := p.Adapter.(adapters.OrgMprisMediaPlayer2PlayerAdapterShuffle)
+	shuffle, ok := p.Adapter.(types.OrgMprisMediaPlayer2PlayerAdapterShuffle)
 	if ok {
 		methods["Shuffle"] = shuffle.Shuffle
 	}
@@ -94,11 +94,11 @@ func (p *OrgMprisMediaPlayer2Player) SetMethods() map[string]interface{} {
 		"Rate":   p.Adapter.SetRate,
 		"Volume": p.Adapter.SetVolume,
 	}
-	loopStatus, ok := p.Adapter.(adapters.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
+	loopStatus, ok := p.Adapter.(types.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
 	if ok {
 		methods["LoopStatus"] = loopStatus.SetLoopStatus
 	}
-	shuffle, ok := p.Adapter.(adapters.OrgMprisMediaPlayer2PlayerAdapterShuffle)
+	shuffle, ok := p.Adapter.(types.OrgMprisMediaPlayer2PlayerAdapterShuffle)
 	if ok {
 		methods["Shuffle"] = shuffle.SetShuffle
 	}

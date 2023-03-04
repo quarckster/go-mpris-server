@@ -41,10 +41,10 @@ func NewOrgFreedesktopDBusProperties(
 }
 
 type OrgFreedesktopDBusProperties struct {
-	mut        sync.RWMutex
-	getMethods methodsMap
-	setMethods methodsMap
-	Emit       func(string, dbus.Variant) error
+	mut                 sync.RWMutex
+	getMethods          methodsMap
+	setMethods          methodsMap
+	EmitPropertyChanged func(string, dbus.Variant) error
 }
 
 func (p *OrgFreedesktopDBusProperties) Get(iface string, property string) (dbus.Variant, *dbus.Error) {
@@ -107,7 +107,7 @@ func (p *OrgFreedesktopDBusProperties) Set(iface string, property string, newv d
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
-	err = p.Emit(property, newv)
+	err = p.EmitPropertyChanged(property, newv)
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
