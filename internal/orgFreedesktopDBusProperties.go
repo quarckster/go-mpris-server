@@ -14,7 +14,6 @@ type methodsMap = map[iface]map[property]interface{}
 
 func NewOrgFreedesktopDBusProperties(
 	serviceName string,
-	conn *dbus.Conn,
 	root *OrgMprisMediaPlayer2,
 	player *OrgMprisMediaPlayer2Player,
 ) *OrgFreedesktopDBusProperties {
@@ -24,8 +23,9 @@ func NewOrgFreedesktopDBusProperties(
 	sm := make(methodsMap)
 	sm["org.mpris.MediaPlayer2"] = root.SetMethods()
 	sm["org.mpris.MediaPlayer2.Player"] = player.SetMethods()
+	conn, _ := dbus.SessionBus()
 	return &OrgFreedesktopDBusProperties{
-		serviceName: "org.mpris.MediaPlayer2." + serviceName,
+		serviceName: serviceName,
 		getMethods:  gm,
 		setMethods:  sm,
 		conn:        conn,

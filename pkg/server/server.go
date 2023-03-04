@@ -35,7 +35,7 @@ func NewServer(
 func (s *Server) exportMethods() error {
 	root := internal.NewOrgMprisMediaPlayer2(s.rootAdapter)
 	player := internal.NewOrgMprisMediaPlayer2Player(s.playerAdapter)
-	properties := internal.NewOrgFreedesktopDBusProperties(s.serviceName, s.conn, root, player)
+	properties := internal.NewOrgFreedesktopDBusProperties(s.serviceName, root, player)
 	return internal.ExportMethods(s.conn, root, player, properties)
 }
 
