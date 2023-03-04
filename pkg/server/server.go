@@ -10,12 +10,11 @@ import (
 )
 
 type Server struct {
-	ServiceName string
-	conn        *dbus.Conn
-	root        *internal.OrgMprisMediaPlayer2
-	player      *internal.OrgMprisMediaPlayer2Player
-	properties  *internal.OrgFreedesktopDBusProperties
-	stop        chan bool
+	serviceName   string
+	conn          *dbus.Conn
+	rootAdapter   types.OrgMprisMediaPlayer2Adapter
+	playerAdapter types.OrgMprisMediaPlayer2PlayerAdapter
+	stop          chan bool
 }
 
 // Create a new server with a given name and initialize needed data.
@@ -24,18 +23,20 @@ func NewServer(
 	rootAdapter types.OrgMprisMediaPlayer2Adapter,
 	playerAdapter types.OrgMprisMediaPlayer2PlayerAdapter,
 ) *Server {
-	root := internal.NewOrgMprisMediaPlayer2(rootAdapter)
-	player := internal.NewOrgMprisMediaPlayer2Player(playerAdapter)
-	properties := internal.NewOrgFreedesktopDBusProperties(root, player)
 	server := Server{
-		ServiceName: "org.mpris.MediaPlayer2." + name,
-		root:        root,
-		player:      player,
-		properties:  properties,
-		stop:        make(chan bool, 1),
+		serviceName:   "org.mpris.MediaPlayer2." + name,
+		rootAdapter:   rootAdapter,
+		playerAdapter: playerAdapter,
+		stop:          make(chan bool, 1),
 	}
-	properties.EmitPropertyChanged = server.EmitPropertyChanged
 	return &server
+}
+
+func (s *Server) exportMethods() error {
+	root := internal.NewOrgMprisMediaPlayer2(s.rootAdapter)
+	player := internal.NewOrgMprisMediaPlayer2Player(s.playerAdapter)
+	properties := internal.NewOrgFreedesktopDBusProperties(s.serviceName, s.conn, root, player)
+	return internal.ExportMethods(s.conn, root, player, properties)
 }
 
 // Start the server and block.
@@ -45,18 +46,18 @@ func (s *Server) Listen() error {
 		return err
 	}
 	s.conn = conn
-	reply, err := s.conn.RequestName(s.ServiceName, dbus.NameFlagReplaceExisting)
+	reply, err := s.conn.RequestName(s.serviceName, dbus.NameFlagReplaceExisting)
 	if err != nil || reply != dbus.RequestNameReplyPrimaryOwner {
 		s.conn.Close()
-		return errors.New("Unable to claim " + s.ServiceName)
+		return errors.New("Unable to claim " + s.serviceName)
 	}
-	err = internal.ExportMethods(s.conn, s.root, s.player, s.properties)
+	err = s.exportMethods()
 	if err != nil {
-		s.conn.ReleaseName(s.ServiceName)
+		s.conn.ReleaseName(s.serviceName)
 		s.conn.Close()
 		return err
 	}
-	log.Println("Started DBus server on " + s.ServiceName)
+	log.Println("Started DBus server on " + s.serviceName)
 	<-s.stop
 	return nil
 }
@@ -69,7 +70,7 @@ func (s *Server) Stop() error {
 		s.stop <- true
 		return err
 	}
-	_, err = s.conn.ReleaseName(s.ServiceName)
+	_, err = s.conn.ReleaseName(s.serviceName)
 	if err != nil {
 		s.stop <- true
 		return err
@@ -79,18 +80,7 @@ func (s *Server) Stop() error {
 		s.stop <- true
 		return err
 	}
-	log.Println("Finished " + s.ServiceName)
+	log.Println("Finished " + s.serviceName)
 	s.stop <- true
 	return nil
-}
-
-// Emit sends the given signal to the bus.
-func (s *Server) EmitPropertyChanged(property string, newv dbus.Variant) error {
-	return s.conn.Emit(
-		"/org/mpris/MediaPlayer2",
-		"org.freedesktop.DBus.Properties.PropertiesChanged",
-		s.ServiceName,
-		map[string]dbus.Variant{property: newv},
-		[]string{},
-	)
 }

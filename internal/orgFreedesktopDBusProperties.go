@@ -5,29 +5,16 @@ import (
 	"sync"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/godbus/dbus/v5/prop"
 )
 
 type iface = string
 type property = string
 type methodsMap = map[iface]map[property]interface{}
 
-// ErrIfaceNotFound is the error returned to peers who try to access properties
-// on interfaces that aren't found.
-var ErrIfaceNotFound = dbus.NewError("org.freedesktop.DBus.Properties.Error.InterfaceNotFound", nil)
-
-// ErrPropNotFound is the error returned to peers trying to access properties
-// that aren't found.
-var ErrPropNotFound = dbus.NewError("org.freedesktop.DBus.Properties.Error.PropertyNotFound", nil)
-
-// ErrReadOnly is the error returned to peers trying to set a read-only
-// property.
-var ErrReadOnly = dbus.NewError("org.freedesktop.DBus.Properties.Error.ReadOnly", nil)
-
-// ErrInvalidArg is returned to peers if the type of the property that is being
-// changed and the argument don't match.
-var ErrInvalidArg = dbus.NewError("org.freedesktop.DBus.Properties.Error.InvalidArg", nil)
-
 func NewOrgFreedesktopDBusProperties(
+	serviceName string,
+	conn *dbus.Conn,
 	root *OrgMprisMediaPlayer2,
 	player *OrgMprisMediaPlayer2Player,
 ) *OrgFreedesktopDBusProperties {
@@ -37,14 +24,20 @@ func NewOrgFreedesktopDBusProperties(
 	sm := make(methodsMap)
 	sm["org.mpris.MediaPlayer2"] = root.SetMethods()
 	sm["org.mpris.MediaPlayer2.Player"] = player.SetMethods()
-	return &OrgFreedesktopDBusProperties{getMethods: gm, setMethods: sm}
+	return &OrgFreedesktopDBusProperties{
+		serviceName: "org.mpris.MediaPlayer2." + serviceName,
+		getMethods:  gm,
+		setMethods:  sm,
+		conn:        conn,
+	}
 }
 
 type OrgFreedesktopDBusProperties struct {
-	mut                 sync.RWMutex
-	getMethods          methodsMap
-	setMethods          methodsMap
-	EmitPropertyChanged func(string, dbus.Variant) error
+	mut         sync.RWMutex
+	getMethods  methodsMap
+	setMethods  methodsMap
+	conn        *dbus.Conn
+	serviceName string
 }
 
 func (p *OrgFreedesktopDBusProperties) Get(iface string, property string) (dbus.Variant, *dbus.Error) {
@@ -52,11 +45,11 @@ func (p *OrgFreedesktopDBusProperties) Get(iface string, property string) (dbus.
 	defer p.mut.RUnlock()
 	properties, ok := p.getMethods[iface]
 	if !ok {
-		return dbus.Variant{}, ErrIfaceNotFound
+		return dbus.Variant{}, prop.ErrIfaceNotFound
 	}
 	method, ok := properties[property]
 	if !ok {
-		return dbus.Variant{}, ErrPropNotFound
+		return dbus.Variant{}, prop.ErrPropNotFound
 	}
 	reflectValue := reflect.ValueOf(method).Call([]reflect.Value{})
 	// get methods should return a value and an error
@@ -73,7 +66,7 @@ func (p *OrgFreedesktopDBusProperties) GetAll(iface string) (map[string]dbus.Var
 	defer p.mut.RUnlock()
 	properties, ok := p.getMethods[iface]
 	if !ok {
-		return nil, ErrIfaceNotFound
+		return nil, prop.ErrIfaceNotFound
 	}
 	result := make(map[string]dbus.Variant, len(properties))
 	var err error
@@ -94,11 +87,11 @@ func (p *OrgFreedesktopDBusProperties) Set(iface string, property string, newv d
 	defer p.mut.Unlock()
 	properties, ok := p.setMethods[iface]
 	if !ok {
-		return ErrIfaceNotFound
+		return prop.ErrIfaceNotFound
 	}
 	method, ok := properties[property]
 	if !ok {
-		return ErrPropNotFound
+		return prop.ErrPropNotFound
 	}
 	args := make([]reflect.Value, 1)
 	args[0] = reflect.ValueOf(newv.Value())
@@ -107,9 +100,20 @@ func (p *OrgFreedesktopDBusProperties) Set(iface string, property string, newv d
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
-	err = p.EmitPropertyChanged(property, newv)
+	err = p.EmitPropertiesChanged(property, newv)
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
 	return nil
+}
+
+// Emit sends the given signal to the bus.
+func (p *OrgFreedesktopDBusProperties) EmitPropertiesChanged(property string, newv dbus.Variant) error {
+	return p.conn.Emit(
+		"/org/mpris/MediaPlayer2",
+		"org.freedesktop.DBus.Properties.PropertiesChanged",
+		p.serviceName,
+		map[string]dbus.Variant{property: newv},
+		[]string{},
+	)
 }
