@@ -18,6 +18,6 @@ func NewEventHandler(
 }
 
 type EventHandler struct {
-	Root   types.OrgMprisMediaPlayer2EventAdapter
-	Player types.OrgMprisMediaPlayer2PlayerEventAdapter
+	Root   types.OrgMprisMediaPlayer2EventHandler
+	Player types.OrgMprisMediaPlayer2PlayerEventHandler
 }

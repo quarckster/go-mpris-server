@@ -135,11 +135,11 @@ const (
 	LoopStatusPlaylist LoopStatus = "Playlist"
 )
 
-type OrgMprisMediaPlayer2EventAdapter interface {
+type OrgMprisMediaPlayer2EventHandler interface {
 	OnAll() error
 }
 
-type OrgMprisMediaPlayer2PlayerEventAdapter interface {
+type OrgMprisMediaPlayer2PlayerEventHandler interface {
 	OnEnded() error
 	OnVolume() error
 	OnPlayback() error
