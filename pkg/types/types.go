@@ -35,8 +35,8 @@ type OrgMprisMediaPlayer2PlayerAdapter interface {
 	PlayPause() error
 	Stop() error
 	Play() error
-	Seek(offset int64) error
-	SetPosition(trackId string, position int64) error
+	Seek(offset Microseconds) error
+	SetPosition(trackId string, position Microseconds) error
 	OpenUri(uri string) error
 	PlaybackStatus() (PlaybackStatus, error)
 	Rate() (float64, error)

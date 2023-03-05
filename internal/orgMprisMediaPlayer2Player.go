@@ -43,11 +43,11 @@ func (p *OrgMprisMediaPlayer2Player) Play() *dbus.Error {
 }
 
 func (p *OrgMprisMediaPlayer2Player) Seek(offset int64) *dbus.Error {
-	return makeError(p.Adapter.Seek(offset))
+	return makeError(p.Adapter.Seek(types.Microseconds(offset)))
 }
 
 func (p *OrgMprisMediaPlayer2Player) SetPosition(trackId string, position int64) *dbus.Error {
-	return makeError(p.Adapter.SetPosition(trackId, position))
+	return makeError(p.Adapter.SetPosition(trackId, types.Microseconds(position)))
 }
 
 func (p *OrgMprisMediaPlayer2Player) OpenUri(uri string) *dbus.Error {
@@ -60,6 +60,11 @@ func (p *OrgMprisMediaPlayer2Player) Metadata() (map[string]dbus.Variant, error)
 		return map[string]dbus.Variant{}, err
 	}
 	return metadata.MakeMap(), nil
+}
+
+func (p *OrgMprisMediaPlayer2Player) SetLoopStatus(status string) error {
+	loopStatus := p.Adapter.(types.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
+	return loopStatus.SetLoopStatus(types.LoopStatus(status))
 }
 
 func (p *OrgMprisMediaPlayer2Player) GetMethods() map[string]interface{} {
@@ -94,9 +99,9 @@ func (p *OrgMprisMediaPlayer2Player) SetMethods() map[string]interface{} {
 		"Rate":   p.Adapter.SetRate,
 		"Volume": p.Adapter.SetVolume,
 	}
-	loopStatus, ok := p.Adapter.(types.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
+	_, ok := p.Adapter.(types.OrgMprisMediaPlayer2PlayerAdapterLoopStatus)
 	if ok {
-		methods["LoopStatus"] = loopStatus.SetLoopStatus
+		methods["LoopStatus"] = p.SetLoopStatus
 	}
 	shuffle, ok := p.Adapter.(types.OrgMprisMediaPlayer2PlayerAdapterShuffle)
 	if ok {
