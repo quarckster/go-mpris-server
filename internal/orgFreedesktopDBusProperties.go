@@ -13,7 +13,6 @@ type property = string
 type methodsMap = map[iface]map[property]interface{}
 
 func NewOrgFreedesktopDBusProperties(
-	serviceName string,
 	root *OrgMprisMediaPlayer2,
 	player *OrgMprisMediaPlayer2Player,
 ) *OrgFreedesktopDBusProperties {
@@ -25,19 +24,17 @@ func NewOrgFreedesktopDBusProperties(
 	sm["org.mpris.MediaPlayer2.Player"] = player.SetMethods()
 	conn, _ := dbus.SessionBus()
 	return &OrgFreedesktopDBusProperties{
-		serviceName: serviceName,
-		getMethods:  gm,
-		setMethods:  sm,
-		conn:        conn,
+		getMethods: gm,
+		setMethods: sm,
+		conn:       conn,
 	}
 }
 
 type OrgFreedesktopDBusProperties struct {
-	mut         sync.RWMutex
-	getMethods  methodsMap
-	setMethods  methodsMap
-	conn        *dbus.Conn
-	serviceName string
+	mut        sync.RWMutex
+	getMethods methodsMap
+	setMethods methodsMap
+	conn       *dbus.Conn
 }
 
 func (p *OrgFreedesktopDBusProperties) Get(iface string, property string) (dbus.Variant, *dbus.Error) {
@@ -68,12 +65,11 @@ func (p *OrgFreedesktopDBusProperties) GetAll(iface string) (map[string]dbus.Var
 	if !ok {
 		return nil, prop.ErrIfaceNotFound
 	}
-	result := make(map[string]dbus.Variant, len(properties))
-	var err error
+	result := map[string]dbus.Variant{}
 	for k, v := range properties {
 		reflectValue := reflect.ValueOf(v).Call([]reflect.Value{})
 		variant := dbus.MakeVariant(reflectValue[0].Interface())
-		err, _ = reflectValue[1].Interface().(error)
+		err, _ := reflectValue[1].Interface().(error)
 		if err != nil {
 			return map[string]dbus.Variant{}, dbus.MakeFailedError(err)
 		}
@@ -93,27 +89,16 @@ func (p *OrgFreedesktopDBusProperties) Set(iface string, property string, newv d
 	if !ok {
 		return prop.ErrPropNotFound
 	}
-	args := make([]reflect.Value, 1)
-	args[0] = reflect.ValueOf(newv.Value())
+	arg := reflect.ValueOf(newv.Value())
+	args := []reflect.Value{arg}
 	// set methods should always return an error
 	err, _ := reflect.ValueOf(method).Call(args)[0].Interface().(error)
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
-	err = p.EmitPropertiesChanged(property, newv)
+	err = EmitPropertiesChanged(p.conn, iface, map[string]dbus.Variant{property: newv})
 	if err != nil {
 		return dbus.MakeFailedError(err)
 	}
 	return nil
-}
-
-// Emit sends the given signal to the bus.
-func (p *OrgFreedesktopDBusProperties) EmitPropertiesChanged(property string, newv dbus.Variant) error {
-	return p.conn.Emit(
-		"/org/mpris/MediaPlayer2",
-		"org.freedesktop.DBus.Properties.PropertiesChanged",
-		p.serviceName,
-		map[string]dbus.Variant{property: newv},
-		[]string{},
-	)
 }

@@ -8,3 +8,14 @@ func makeError(err error) *dbus.Error {
 	}
 	return nil
 }
+
+func EmitPropertiesChanged(conn *dbus.Conn, iface string, changes map[string]dbus.Variant) error {
+	return conn.Emit(
+		"/org/mpris/MediaPlayer2",
+		"org.freedesktop.DBus.Properties.PropertiesChanged",
+		iface,
+		changes,
+		[]string{},
+	)
+}
+
