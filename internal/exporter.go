@@ -27,6 +27,7 @@ func exportOrgMprisMediaPlayer2Player(conn *dbus.Conn, p *OrgMprisMediaPlayer2Pl
 		"PlayPause": p.PlayPause,
 		"Stop":      p.Stop,
 		"Play":      p.Play,
+		"Seek":      p.Seek,
 	}, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player")
 }
 
