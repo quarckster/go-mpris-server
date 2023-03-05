@@ -134,3 +134,18 @@ const (
 	LoopStatusTrack    LoopStatus = "Track"
 	LoopStatusPlaylist LoopStatus = "Playlist"
 )
+
+type OrgMprisMediaPlayer2EventAdapter interface {
+	OnAll() error
+}
+
+type OrgMprisMediaPlayer2PlayerEventAdapter interface {
+	OnEnded() error
+	OnVolume() error
+	OnPlayback() error
+	OnPlayPause() error
+	OnTitle() error
+	OnSeek(position Microseconds) error
+	OnOptions() error
+	OnAll() error
+}
