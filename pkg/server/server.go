@@ -2,7 +2,6 @@ package server
 
 import (
 	"errors"
-	"log"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/quarckster/go-mpris-server/internal"
@@ -57,7 +56,6 @@ func (s *Server) Listen() error {
 		s.Conn.Close()
 		return err
 	}
-	log.Println("Started DBus server on " + s.serviceName)
 	<-s.stop
 	return nil
 }
@@ -80,7 +78,6 @@ func (s *Server) Stop() error {
 		s.stop <- true
 		return err
 	}
-	log.Println("Finished " + s.serviceName)
 	s.stop <- true
 	return nil
 }
