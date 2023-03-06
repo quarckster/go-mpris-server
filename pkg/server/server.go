@@ -11,9 +11,9 @@ import (
 
 type Server struct {
 	serviceName   string
-	conn          *dbus.Conn
-	rootAdapter   types.OrgMprisMediaPlayer2Adapter
-	playerAdapter types.OrgMprisMediaPlayer2PlayerAdapter
+	Conn          *dbus.Conn
+	RootAdapter   types.OrgMprisMediaPlayer2Adapter
+	PlayerAdapter types.OrgMprisMediaPlayer2PlayerAdapter
 	stop          chan bool
 }
 
@@ -25,18 +25,18 @@ func NewServer(
 ) *Server {
 	server := Server{
 		serviceName:   "org.mpris.MediaPlayer2." + name,
-		rootAdapter:   rootAdapter,
-		playerAdapter: playerAdapter,
+		RootAdapter:   rootAdapter,
+		PlayerAdapter: playerAdapter,
 		stop:          make(chan bool, 1),
 	}
 	return &server
 }
 
 func (s *Server) exportMethods() error {
-	root := internal.NewOrgMprisMediaPlayer2(s.rootAdapter)
-	player := internal.NewOrgMprisMediaPlayer2Player(s.playerAdapter)
+	root := internal.NewOrgMprisMediaPlayer2(s.RootAdapter)
+	player := internal.NewOrgMprisMediaPlayer2Player(s.PlayerAdapter)
 	properties := internal.NewOrgFreedesktopDBusProperties(root, player)
-	return internal.ExportMethods(s.conn, root, player, properties)
+	return internal.ExportMethods(s.Conn, root, player, properties)
 }
 
 // Start the server and block.
@@ -45,16 +45,16 @@ func (s *Server) Listen() error {
 	if err != nil {
 		return err
 	}
-	s.conn = conn
-	reply, err := s.conn.RequestName(s.serviceName, dbus.NameFlagReplaceExisting)
+	s.Conn = conn
+	reply, err := s.Conn.RequestName(s.serviceName, dbus.NameFlagReplaceExisting)
 	if err != nil || reply != dbus.RequestNameReplyPrimaryOwner {
-		s.conn.Close()
+		s.Conn.Close()
 		return errors.New("Unable to claim " + s.serviceName)
 	}
 	err = s.exportMethods()
 	if err != nil {
-		s.conn.ReleaseName(s.serviceName)
-		s.conn.Close()
+		s.Conn.ReleaseName(s.serviceName)
+		s.Conn.Close()
 		return err
 	}
 	log.Println("Started DBus server on " + s.serviceName)
@@ -65,17 +65,17 @@ func (s *Server) Listen() error {
 // Release the claimed bus name and close the connection.
 func (s *Server) Stop() error {
 	var err error
-	err = internal.UnexportMethods(s.conn)
+	err = internal.UnexportMethods(s.Conn)
 	if err != nil {
 		s.stop <- true
 		return err
 	}
-	_, err = s.conn.ReleaseName(s.serviceName)
+	_, err = s.Conn.ReleaseName(s.serviceName)
 	if err != nil {
 		s.stop <- true
 		return err
 	}
-	err = s.conn.Close()
+	err = s.Conn.Close()
 	if err != nil {
 		s.stop <- true
 		return err

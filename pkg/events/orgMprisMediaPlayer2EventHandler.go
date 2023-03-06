@@ -3,6 +3,7 @@ package events
 import (
 	"github.com/godbus/dbus/v5"
 	"github.com/quarckster/go-mpris-server/internal"
+	"github.com/quarckster/go-mpris-server/pkg/server"
 	"github.com/quarckster/go-mpris-server/pkg/types"
 )
 
@@ -31,18 +32,14 @@ func allRootProps(adapter types.OrgMprisMediaPlayer2Adapter) []string {
 	return props
 }
 
-func newOrgMprisMediaPlayer2EventHandler(adapter types.OrgMprisMediaPlayer2Adapter) (*orgMprisMediaPlayer2EventHandler, error) {
-	conn, err := dbus.SessionBus()
-	if err != nil {
-		return &orgMprisMediaPlayer2EventHandler{}, err
-	}
+func newOrgMprisMediaPlayer2EventHandler(mpris *server.Server) *orgMprisMediaPlayer2EventHandler {
 	eventHandler := orgMprisMediaPlayer2EventHandler{
-		conn:     conn,
+		conn:     mpris.Conn,
 		iface:    "org.mpris.MediaPlayer2",
-		adapter:  adapter,
-		allProps: allRootProps(adapter),
+		adapter:  mpris.RootAdapter,
+		allProps: allRootProps(mpris.RootAdapter),
 	}
-	return &eventHandler, nil
+	return &eventHandler
 }
 
 type orgMprisMediaPlayer2EventHandler struct {

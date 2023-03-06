@@ -1,20 +1,14 @@
 package events
 
-import "github.com/quarckster/go-mpris-server/pkg/types"
+import (
+	"github.com/quarckster/go-mpris-server/pkg/server"
+	"github.com/quarckster/go-mpris-server/pkg/types"
+)
 
-func NewEventHandler(
-	rootAdapter types.OrgMprisMediaPlayer2Adapter,
-	playerAdapter types.OrgMprisMediaPlayer2PlayerAdapter,
-) (*EventHandler, error) {
-	rootEventHandler, err := newOrgMprisMediaPlayer2EventHandler(rootAdapter)
-	if err != nil {
-		return nil, err
-	}
-	playerEventHandler, err := newOrgMprisMediaPlayer2PlayerEventHandler(playerAdapter)
-	if err != nil {
-		return nil, err
-	}
-	return &EventHandler{Root: rootEventHandler, Player: playerEventHandler}, nil
+func NewEventHandler(mpris *server.Server) *EventHandler {
+	rootEventHandler := newOrgMprisMediaPlayer2EventHandler(mpris)
+	playerEventHandler := newOrgMprisMediaPlayer2PlayerEventHandler(mpris)
+	return &EventHandler{Root: rootEventHandler, Player: playerEventHandler}
 }
 
 type EventHandler struct {

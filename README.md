@@ -31,6 +31,7 @@ package main
 import (
 	"log"
 
+	"github.com/quarckster/go-mpris-server/pkg/events"
 	"github.com/quarckster/go-mpris-server/pkg/server"
 )
 
@@ -55,6 +56,8 @@ func main() {
 	r := root{}
 	p := player{}
 	s := server.NewServer("MyPlayer", r, p)
+	eventHandler := events.NewEventHandler(s)
 	go s.Listen()
+	// some blocking call should be here
 }
 ```

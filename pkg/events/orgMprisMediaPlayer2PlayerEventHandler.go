@@ -3,6 +3,7 @@ package events
 import (
 	"github.com/godbus/dbus/v5"
 	"github.com/quarckster/go-mpris-server/internal"
+	"github.com/quarckster/go-mpris-server/pkg/server"
 	"github.com/quarckster/go-mpris-server/pkg/types"
 )
 
@@ -54,17 +55,13 @@ func onOptionsProps(adapter types.OrgMprisMediaPlayer2PlayerAdapter) []string {
 }
 
 func newOrgMprisMediaPlayer2PlayerEventHandler(
-	adapter types.OrgMprisMediaPlayer2PlayerAdapter,
-) (*orgMprisMediaPlayer2PlayerEventHandler, error) {
-	conn, err := dbus.SessionBus()
-	if err != nil {
-		return &orgMprisMediaPlayer2PlayerEventHandler{}, err
-	}
+	mpris *server.Server,
+) *orgMprisMediaPlayer2PlayerEventHandler {
 	eventHandler := orgMprisMediaPlayer2PlayerEventHandler{
-		conn:          conn,
+		conn:          mpris.Conn,
 		iface:         "org.mpris.MediaPlayer2.Player",
-		adapter:       adapter,
-		allProps:      allPlayerProps(adapter),
+		adapter:       mpris.PlayerAdapter,
+		allProps:      allPlayerProps(mpris.PlayerAdapter),
 		onEndedProps:  []string{"PlaybackStatus"},
 		onVolumeProps: []string{"Volume"},
 		onPlaybackProps: []string{
@@ -78,9 +75,9 @@ func newOrgMprisMediaPlayer2PlayerEventHandler(
 		onPlayPauseProps: []string{"PlaybackStatus"},
 		onTitleProps:     []string{"Metadata"},
 		onSeekProps:      []string{"Position"},
-		onOptionsProps:   onOptionsProps(adapter),
+		onOptionsProps:   onOptionsProps(mpris.PlayerAdapter),
 	}
-	return &eventHandler, nil
+	return &eventHandler
 }
 
 type orgMprisMediaPlayer2PlayerEventHandler struct {
