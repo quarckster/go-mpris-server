@@ -1,8 +1,6 @@
 package internal
 
 import (
-	"sync"
-
 	"github.com/godbus/dbus/v5"
 	"github.com/quarckster/go-mpris-server/pkg/types"
 )
@@ -15,7 +13,6 @@ func NewOrgMprisMediaPlayer2(adapter types.OrgMprisMediaPlayer2Adapter) *OrgMpri
 
 type OrgMprisMediaPlayer2 struct {
 	Adapter types.OrgMprisMediaPlayer2Adapter
-	mut     sync.RWMutex
 }
 
 func (r *OrgMprisMediaPlayer2) Raise() *dbus.Error {
