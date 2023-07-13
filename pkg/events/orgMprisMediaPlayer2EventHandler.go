@@ -34,7 +34,7 @@ func allRootProps(adapter types.OrgMprisMediaPlayer2Adapter) []string {
 
 func newOrgMprisMediaPlayer2EventHandler(mpris *server.Server) *orgMprisMediaPlayer2EventHandler {
 	eventHandler := orgMprisMediaPlayer2EventHandler{
-		conn:     mpris.Conn,
+		mpris:    mpris,
 		iface:    "org.mpris.MediaPlayer2",
 		adapter:  mpris.RootAdapter,
 		allProps: allRootProps(mpris.RootAdapter),
@@ -43,7 +43,7 @@ func newOrgMprisMediaPlayer2EventHandler(mpris *server.Server) *orgMprisMediaPla
 }
 
 type orgMprisMediaPlayer2EventHandler struct {
-	conn     *dbus.Conn
+	mpris    *server.Server
 	iface    string
 	adapter  types.OrgMprisMediaPlayer2Adapter
 	allProps []string
@@ -54,7 +54,7 @@ func (o *orgMprisMediaPlayer2EventHandler) EmitChanges(props []string) error {
 	if err != nil {
 		return err
 	}
-	return internal.EmitPropertiesChanged(o.conn, o.iface, changes)
+	return internal.EmitPropertiesChanged(o.mpris.Conn, o.iface, changes)
 }
 
 func (o *orgMprisMediaPlayer2EventHandler) OnAll() error {
