@@ -58,7 +58,7 @@ func newOrgMprisMediaPlayer2PlayerEventHandler(
 	mpris *server.Server,
 ) *orgMprisMediaPlayer2PlayerEventHandler {
 	eventHandler := orgMprisMediaPlayer2PlayerEventHandler{
-		conn:          mpris.Conn,
+		mpris:         mpris,
 		iface:         "org.mpris.MediaPlayer2.Player",
 		adapter:       mpris.PlayerAdapter,
 		allProps:      allPlayerProps(mpris.PlayerAdapter),
@@ -81,7 +81,7 @@ func newOrgMprisMediaPlayer2PlayerEventHandler(
 }
 
 type orgMprisMediaPlayer2PlayerEventHandler struct {
-	conn             *dbus.Conn
+	mpris            *server.Server
 	iface            string
 	adapter          types.OrgMprisMediaPlayer2PlayerAdapter
 	allProps         []string
@@ -99,7 +99,7 @@ func (o *orgMprisMediaPlayer2PlayerEventHandler) EmitChanges(props []string) err
 	if err != nil {
 		return err
 	}
-	return internal.EmitPropertiesChanged(o.conn, o.iface, changes)
+	return internal.EmitPropertiesChanged(o.mpris.Conn, o.iface, changes)
 }
 
 func (o *orgMprisMediaPlayer2PlayerEventHandler) OnEnded() error {
@@ -123,7 +123,7 @@ func (o *orgMprisMediaPlayer2PlayerEventHandler) OnTitle() error {
 }
 
 func (o *orgMprisMediaPlayer2PlayerEventHandler) OnSeek(position types.Microseconds) error {
-	o.conn.Emit("/org/mpris/MediaPlayer2", o.iface+".Seeked", int64(position))
+	o.mpris.Conn.Emit("/org/mpris/MediaPlayer2", o.iface+".Seeked", int64(position))
 	return o.EmitChanges(o.onSeekProps)
 }
 
