@@ -62,6 +62,9 @@ func (s *Server) Listen() error {
 
 // Release the claimed bus name and close the connection.
 func (s *Server) Stop() error {
+	if s.Conn == nil {
+		return errors.New("server is not started")
+	}
 	var err error
 	err = internal.UnexportMethods(s.Conn)
 	if err != nil {
