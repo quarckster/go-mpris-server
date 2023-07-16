@@ -1,8 +1,14 @@
 package events
 
 import (
+	"errors"
+
 	"github.com/quarckster/go-mpris-server/pkg/server"
 	"github.com/quarckster/go-mpris-server/pkg/types"
+)
+
+var (
+	errNoConnection = errors.New("no dbus connection")
 )
 
 func NewEventHandler(mpris *server.Server) *EventHandler {

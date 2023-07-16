@@ -1,7 +1,6 @@
 package events
 
 import (
-	"github.com/godbus/dbus/v5"
 	"github.com/quarckster/go-mpris-server/internal"
 	"github.com/quarckster/go-mpris-server/pkg/server"
 	"github.com/quarckster/go-mpris-server/pkg/types"
@@ -50,6 +49,9 @@ type orgMprisMediaPlayer2EventHandler struct {
 }
 
 func (o *orgMprisMediaPlayer2EventHandler) EmitChanges(props []string) error {
+	if o.mpris.Conn == nil {
+		return errNoConnection
+	}
 	changes, err := internal.Changes(o.adapter, props)
 	if err != nil {
 		return err

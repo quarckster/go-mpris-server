@@ -1,7 +1,6 @@
 package events
 
 import (
-	"github.com/godbus/dbus/v5"
 	"github.com/quarckster/go-mpris-server/internal"
 	"github.com/quarckster/go-mpris-server/pkg/server"
 	"github.com/quarckster/go-mpris-server/pkg/types"
@@ -95,6 +94,9 @@ type orgMprisMediaPlayer2PlayerEventHandler struct {
 }
 
 func (o *orgMprisMediaPlayer2PlayerEventHandler) EmitChanges(props []string) error {
+	if o.mpris.Conn == nil {
+		return errNoConnection
+	}
 	changes, err := internal.Changes(o.adapter, props)
 	if err != nil {
 		return err
@@ -123,6 +125,9 @@ func (o *orgMprisMediaPlayer2PlayerEventHandler) OnTitle() error {
 }
 
 func (o *orgMprisMediaPlayer2PlayerEventHandler) OnSeek(position types.Microseconds) error {
+	if o.mpris.Conn == nil {
+		return errNoConnection
+	}
 	o.mpris.Conn.Emit("/org/mpris/MediaPlayer2", o.iface+".Seeked", int64(position))
 	return o.EmitChanges(o.onSeekProps)
 }
