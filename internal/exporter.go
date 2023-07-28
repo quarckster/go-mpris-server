@@ -21,13 +21,15 @@ func exportOrgMprisMediaPlayer2(conn *dbus.Conn, r *OrgMprisMediaPlayer2) error 
 
 func exportOrgMprisMediaPlayer2Player(conn *dbus.Conn, p *OrgMprisMediaPlayer2Player) error {
 	return conn.ExportSubtreeMethodTable(map[string]interface{}{
-		"Next":      p.Next,
-		"Previous":  p.Previous,
-		"Pause":     p.Pause,
-		"PlayPause": p.PlayPause,
-		"Stop":      p.Stop,
-		"Play":      p.Play,
-		"Seek":      p.Seek,
+		"Next":        p.Next,
+		"Previous":    p.Previous,
+		"Pause":       p.Pause,
+		"PlayPause":   p.PlayPause,
+		"Stop":        p.Stop,
+		"Play":        p.Play,
+		"Seek":        p.Seek,
+		"SetPosition": p.SetPosition,
+		"OpenUri":     p.OpenUri,
 	}, "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player")
 }
 
